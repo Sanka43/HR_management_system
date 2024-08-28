@@ -19,7 +19,7 @@ export default function ManageEmployees() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+//aaaa
         try {
             const ref = collection(db, 'employees'); // Assuming 'employees' is your Firestore collection
             await addDoc(ref, {
