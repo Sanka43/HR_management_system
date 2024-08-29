@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore';
 import firebaseConfig from './firebase.js';
 import './Admin.css'
 
@@ -16,10 +16,11 @@ export default function ManageEmployees() {
     const [gender, setGender] = useState('');
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
+    const [employees, setEmployees] = useState([]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-//aaaa
+//store data
         try {
             const ref = collection(db, 'employees'); // Assuming 'employees' is your Firestore collection
             await addDoc(ref, {
@@ -32,6 +33,7 @@ export default function ManageEmployees() {
                 address: address
             });
             alert("New employee added");
+            fetchEmployees();
             // Reset the form fields
             setEmail('');
             setPassword('');
@@ -44,7 +46,26 @@ export default function ManageEmployees() {
             console.error("Error adding employee", error);
             alert("Failed to add employee");
         }
-    }
+    };
+
+// Function to fetch all employees from Firestore
+
+    const fetchEmployees = async () =>{
+        try{
+            const querySnapshot = await getDocs(collection(db, 'employees'));
+            const employeeList = querySnapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
+            setEmployees(employeeList);
+        } catch (error) {
+            console.error('Error fatching employees', error)
+        }
+    };
+
+    useEffect(() => {
+        fetchEmployees();
+    }, []);
 
     return (
         <div className="panel">
@@ -152,18 +173,21 @@ export default function ManageEmployees() {
                         <th>Action</th>
                     </tr>
                 </thead>
+
                 <tbody>
-                    <tr>
-                        <td>01</td>
-                        <td>isankaerangahtc820@gmail.com</td>
-                        <td>Sanka</td>
-                        <td>Sanka Eranga</td>
-                        <td>absent</td>
+                    {employees.map((employee) => 
+                    <tr key={employee.id}>
+                        <td>{employee.id}</td>
+                        <td>{employee.email}</td>
+                        <td>{employee.f_Name}</td>
+                        <td>{employee.l_Name}</td>
+                        <td>{employee.phone}</td>
                         <td>
                             {/* <a href="#" className="icon-view"><i className="fas fa-eye"></i></a>
                             <a href="#" onClick={() => confirm('Are you sure?')} className="icon-delete"><i className="fas fa-trash"></i></a> */}
                         </td>
                     </tr>
+                    )}
                 </tbody>
             </table>
         </div>
